@@ -1,5 +1,6 @@
 package com.example.mems
 
+import android.content.Intent
 import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -17,6 +18,7 @@ import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+    var currentImgUrl: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -29,9 +31,9 @@ class MainActivity : AppCompatActivity() {
         val url ="https://meme-api.herokuapp.com/gimme"
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url,null,
-            Response.Listener { response ->
-                val url = response.getString("url");
-                Glide.with(this).load(url).listener(object : RequestListener<Drawable> {
+            { response ->
+                currentImgUrl = response.getString("url");
+                Glide.with(this).load(currentImgUrl).listener(object : RequestListener<Drawable> {
                     override fun onLoadFailed(
                         e: GlideException?,
                         model: Any?,
@@ -59,14 +61,20 @@ class MainActivity : AppCompatActivity() {
 
 
             },
-            Response.ErrorListener {  })
+            {  })
 
 // Add the request to the RequestQueue.
         queue.add(jsonObjectRequest)
 
 
     }
-    fun shareMem(view: android.view.View) {}
+    fun shareMem(view: android.view.View) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type="text/plain"
+        intent.putExtra(Intent.EXTRA_TEXT,"Here check new memes $currentImgUrl")
+        var chooser = Intent.createChooser(intent,"Share new memes");
+        startActivity(chooser)
+    }
     fun nextMem(view: android.view.View) {
         loadMore()
     }
